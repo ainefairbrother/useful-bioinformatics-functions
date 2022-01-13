@@ -1,5 +1,5 @@
 # useful-bioinformatics-functions
-This repo contains useful functions that I have developed during my PhD. 
+This repo contains useful functions for bioinformatics-related tasks that I have developed during my PhD. 
 
 # 1. helper-funs-to-query-api-opentargets-gh.R
   * I created these helper functions as wrappers for the https://genetics.opentargets.org/ API. 
