@@ -96,13 +96,14 @@ plot.manhattan.from.matrixeqtl.output.file = function(matrixeqtl.output.file="",
   # Manhattan plot
   manhattan.plot = ggplot(matrixeqtl.output.df, aes(x=BP_cumulative, y=-log10(P))) +
     
-    # Show all points
+    # Plot associations
     geom_point(aes(color=as.factor(CHR)), alpha=0.75, size=0.8) +
     scale_color_manual(values = rep(c("grey", "black"), 22)) +
     
-    # custom X axis:
+    # Use x_axis_spacing df to center the points for each chr
     scale_x_continuous(label = x_axis_spacing$CHR, breaks = x_axis_spacing$center) +
-    scale_y_continuous(limits = c(0, 15), expand = c(0, 0)) +     # remove space between plot area and x axis
+    # remove space between plot area and x axis
+    scale_y_continuous(limits = c(0, 15), expand = c(0, 0)) + 
     
     # Add line to indicate genome wide sig.
     geom_hline(yintercept = -log10(5e-8), colour="red", alpha=0.5)  + 
