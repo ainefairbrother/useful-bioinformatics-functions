@@ -7,7 +7,7 @@
 #' @param genome.wide.sig.cutoff A horizontal red line will be drawn on the output to indicate the p-value cut-off for genome-wide significance. The default value is 5e-08.
 #' @param return.or.save This argument instructs the function to either save the plot to output.file, or to return the plot using `return()`. 
 #' @param output.file This argument is a character string to indicate the file in which to save the output file, given that `return.or.save` is set to "save".
-#' Please indicate /path/to/file_name without a file extension. 
+#' Please indicate /path/to/file_name without a file extension. The plot will be saved as a 200dpi .png file. 
 #'
 #' @examples
 #' 
