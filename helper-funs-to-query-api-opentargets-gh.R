@@ -45,10 +45,11 @@ query.opentargets.with.varIDs = function(variantID){
   
   # Set variables object of arguments to be passed to endpoint
   variables <- list("variantId" = variantID)
+  print(variables)
   
   # Construct POST request body object with query string and variables
   post_body <- list(query = query_string, variables = variables)
-  
+
   # Perform POST request
   r <- httr::POST(url=base_url, body=post_body, encode='json')
   
