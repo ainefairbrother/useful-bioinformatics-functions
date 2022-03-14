@@ -1,3 +1,21 @@
+###################################################################
+# Title: Functions to regress covariates from an expression matrix
+# Author: Aine Fairbrother-Browne
+# Date: 03/22
+#
+# Usage:
+#
+# Inputs:
+# The correct_gene_by_sample_matrix() function takes in a gene x sample
+# expression matrix, mat_file, and a covariate x sample covariate file,
+# covs_file. It regresses the covariates from the expression matrix
+# using a linear model, applying it gene-wise. 
+#
+# Outputs:
+# 1. A matrix of the residual values
+# 2. A table of Shapiro normality test P-values 
+# 3. A distribution plot to show the spread of Shapiro P-values
+###################################################################
 
 def regress_covs_from_gene(y):
 
