@@ -1,9 +1,9 @@
-# define fn. to apply column-wise
+
 def regress_covs_from_gene(y):
 
   """
-  function to regress out covariates from each gene - applies over the gene axis
-  inserts residuals into predefined residual dataframe with correct row (sample id) and col (gene) labels
+  Function to regress out covariates from each gene - applies over columns (genes)
+  Inserts residuals into predefined residual dataframe with correct row (sample id) and col (gene) labels
   """
   gene_name = y.name
   
