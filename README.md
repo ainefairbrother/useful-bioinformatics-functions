@@ -13,18 +13,18 @@ This repo contains useful functions for doing typical bioinformatics tasks that 
 # `apply_covariate_correction_to_gene_sample_matrix.py`  
   * The function regress_covs_from_gene() takes in an expression matrix and a covariate matrix, and performs linear regression gene-wise to correct out the effects of covariates on the expression data. The outputs are an expression residuals matrix, and a table containing a Shapiro normality test P-value for each gene, enabling QC-ing of the residual data. An optional plot is also output to visualise the distribution of the Shapiro P-values.  
 
-## Usage
+### Usage
 
-### In:  
+#### In:  
 1. A gene (rows) x sample (cols) expression matrix, `mat_file`  
 2. A numeric covariate (rows) x sample (cols) covariate file, `covs_file`  
 
-### Out:  
+#### Out:  
 1. A matrix of the residual values  
 2. A table of Shapiro normality test P-values  
 3. A distribution plot to show the spread of Shapiro P-values  
 
-### Example:  
+#### Example:  
 Run from CLI with the following command: 
 `python3.8 apply_covariate_correction_to_gene_sample_matrix.py --mat_file="/path/to/mat_file.csv" --covs_file="/path/to/covs_file.csv" --plot_shapiro_dist="True"`
 
