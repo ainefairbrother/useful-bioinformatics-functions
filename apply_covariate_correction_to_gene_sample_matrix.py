@@ -1,27 +1,37 @@
-###################################################################
-# Title: Functions to regress covariates from an expression matrix
+######################################################################################
+# Title: Functions to covariate correct a gene-by-sample expression matrix
 # Author: Aine Fairbrother-Browne
 # Date: 03/22
+# Contact: ucbtas8@ucl.ac.uk
 #
-# Usage:
+# Usage:-
 #
-# Inputs:
-# The correct_gene_by_sample_matrix() function takes in a gene x sample
-# expression matrix, mat_file, and a covariate x sample covariate file,
-# covs_file. It regresses the covariates from the expression matrix
-# using a linear model, applying it gene-wise. 
+# In:
+# The correct_gene_by_sample_matrix() function takes in a gene (rows) x sample (cols)
+# expression matrix, mat_file, and a covariate (rows) x sample (cols) covariate file,
+# covs_file. It regresses the covariates gene-wise from the expression matrix
+# using a linear model.
 #
-# Outputs:
+# Out:
 # 1. A matrix of the residual values
 # 2. A table of Shapiro normality test P-values 
 # 3. A distribution plot to show the spread of Shapiro P-values
-###################################################################
+#
+# Example:
+# correct_gene_by_sample_matrix(
+#       mat_file="/path/to/expression_matrix.csv", 
+#       covs_file="/path/to/covariate_matrix.csv", 
+#       plot_shapiro_dist=True
+#       )
+#
+######################################################################################
 
 def regress_covs_from_gene(y):
 
   """
-  Function to regress out covariates from each gene - applies over columns (genes)
-  Inserts residuals into predefined residual dataframe with correct row (sample id) and col (gene) labels
+  Function to regress out covariates from each gene - applies over each column (gene), y.
+  Inserts residuals into predefined residual dataframe, residual_df, at residual_df[y], and 
+  inserts Shapiro P-values into shapiro_df.loc[y, 'shapiro_pval'].
   """
   gene_name = y.name
   
@@ -69,9 +79,9 @@ def regress_covs_from_gene(y):
 def correct_gene_by_sample_matrix(mat_file="", covs_file="", plot_shapiro_dist=True):
 
   """
-  :param mat: file path of a transcriptomic gene (rows) x sample (cols) matrix, where the values are counts, TPMs, FPKMs, RPKMs, etc (csv)
-  :param covs: file path of a covariate (rows) by sample (cols) matrix containing the covariates that you want to correct for. These must be numeric, for instance sex should be encoded as 0|1. (csv)
-  :param: plot_shapiro_dist
+  :param mat_file: file path of a transcriptomic gene (rows) x sample (cols) matrix, where the values are counts, TPMs, FPKMs, RPKMs, etc. This should be a .csv file. 
+  :param covs_file: file path of a covariate (rows) by sample (cols) matrix containing the covariates that you want to correct for. These must be numeric, for instance sex should be encoded as 0|1. This should be a .csv file. 
+  :param plot_shapiro_dist: If True, a distribution plot is generated 
   :return: residuals df
   
   """
@@ -84,6 +94,10 @@ def correct_gene_by_sample_matrix(mat_file="", covs_file="", plot_shapiro_dist=T
   import sys
   import os
   import re
+  
+  ##########################################################
+  # Import data
+  ##########################################################
   
   # import tpm file
   print("1. Importing mat_file.")
@@ -106,6 +120,10 @@ def correct_gene_by_sample_matrix(mat_file="", covs_file="", plot_shapiro_dist=T
   print("covs dimensions=",covs.shape)
 
   print("3. Filtering mat and covs for column names in common.")
+  
+  ##########################################################
+  # Wrangle data
+  ##########################################################
 
   # getting columns (sample IDs) in common between covs and mat
   intersection_cols = covs.columns & mat.columns
@@ -127,13 +145,16 @@ def correct_gene_by_sample_matrix(mat_file="", covs_file="", plot_shapiro_dist=T
 
   # remove genes (cols) that are all 0
   mat = mat.loc[:, ~mat.eq(0).all()]
+  
   # remove genes (cols) that are all NA
   mat = mat.dropna(axis=1)
 
   print("4. Checking for duplicate columns")
+  
   if(mat.loc[:,mat.columns.duplicated()].shape[1]>0):
     print(mat.loc[:,mat.columns.duplicated()].shape[1], "duplicate columns detected, these will be removed.")
-    if(mat.loc[:,mat.columns.duplicated()].shape[1]==0):
+  
+  if(mat.loc[:,mat.columns.duplicated()].shape[1]==0):
       print("No duplicate columns detected.")
 
   # remove dup cols in mat
@@ -142,8 +163,10 @@ def correct_gene_by_sample_matrix(mat_file="", covs_file="", plot_shapiro_dist=T
   # remove index name
   mat = mat.rename_axis(None, axis=1)
   covs = covs.rename_axis(None, axis=1)
-
-  # performing mlr across genes 
+  
+  ##########################################################
+  # Performing mlr across genes 
+  ##########################################################
 
   # defining empty array to hold residual tpm values
   residual_df = pd.DataFrame(np.zeros(shape=(len(mat.index.values), len(mat.columns.values))),
@@ -166,11 +189,19 @@ def correct_gene_by_sample_matrix(mat_file="", covs_file="", plot_shapiro_dist=T
   mat.apply(regress_covs_from_gene, axis=0);
   
   print("Regression done, residuals generated.")
+  
+  ##########################################################
+  # QC-ing output
+  ##########################################################
 
   # find % genes with normally distributed residuals
   sig_norm_gene_count = (int(shapiro_df[shapiro_df <= 0.05].count()) / len(shapiro_df.index.values)) * 100
   print(round(sig_norm_gene_count, 2), "% of gene residuals have a significantly normal distribution")
-
+  
+  ##########################################################
+  # Writing output files
+  ##########################################################
+  
   # generate outfile names
   print("7. Writing output")
   residual_out_file = mat_file.replace(".csv", "_residuals.csv") 
@@ -194,7 +225,6 @@ def correct_gene_by_sample_matrix(mat_file="", covs_file="", plot_shapiro_dist=T
     plot_out_file = mat_file.replace(".csv", "_shapiro_pvals.png")
     
     # plotting a density plot for the shapiro(residual) p-values
-
     plt.figure()
     sns.distplot(shapiro_df['shapiro_pval'], hist=True)
     plt.xlabel('Shapiro pvals') 
