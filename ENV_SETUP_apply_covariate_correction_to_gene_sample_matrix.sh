@@ -1,4 +1,12 @@
-# setup file to generate a conda environment to run apply_covariate_correction_to_gene_sample_matrix.py  
+#!/usr/bin/env bash
+
+######################################################################################
+# Title: Setup file to generate a conda env to run 
+# apply_covariate_correction_to_gene_sample_matrix.py 
+# Author: Aine Fairbrother-Browne
+# Date: 03/22
+# Contact: ucbtas8@ucl.ac.uk
+######################################################################################
 
 # initiate conda environment containing python v3.8
 conda create -n py38 python=3.8
