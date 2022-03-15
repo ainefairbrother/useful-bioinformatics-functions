@@ -16,7 +16,8 @@ This repo contains useful functions for doing typical bioinformatics tasks that 
 ## Usage
 
 In:  
-The `correct_gene_by_sample_matrix()` function takes in a gene (rows) x sample (cols) expression matrix, `mat_file`, and a covariate (rows) x sample (cols) covariate file, `covs_file`. It regresses the covariates gene-wise from the expression matrix using a linear model.  
+1. A gene (rows) x sample (cols) expression matrix, `mat_file`  
+2. A numeric covariate (rows) x sample (cols) covariate file, `covs_file`  
 
 Out:  
 1. A matrix of the residual values  
