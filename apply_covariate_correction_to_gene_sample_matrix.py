@@ -70,6 +70,17 @@ def correct_gene_by_sample_matrix(mat_file="", covs_file="", plot_shapiro_dist=T
     header=0)
 
   print("covs dimensions=",covs.shape)
+  
+  ##########################################################
+  # Test input file format
+  ##########################################################
+  
+  # run input test on mat - check for ENSG in index 
+  if 'ENSG' not in mat.index.to_list()[0]:
+    print("INPUT FORMAT WARNING: 'ENSG' not detected in row indices. Is your input mat_file in the form rows=genes, cols=samples?")
+  # run input test on covs - check for lengths of rows and cols
+  if len(covs.index.to_list()) > len(covs.columns.to_list()):
+    print("INPUT FORMAT WARNING: you have more rows than columns. Is your input covs_file in the form rows=genes, cols=samples?")
 
   print("3. Filtering mat and covs for column names in common.")
   
