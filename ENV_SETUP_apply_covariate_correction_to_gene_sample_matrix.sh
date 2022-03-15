@@ -12,6 +12,7 @@ conda install -c anaconda pandas
 conda install -c anaconda numpy
 conda install -c anaconda scikit-learn
 conda install -c anaconda scipy
+conda install -c conda-forge fire
 echo "Environment py38 ready to run apply_covariate_correction_to_gene_sample_matrix.py"
 
 

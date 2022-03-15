@@ -18,64 +18,25 @@
 # 3. A distribution plot to show the spread of Shapiro P-values
 #
 # Example:
-# correct_gene_by_sample_matrix(
-#       mat_file="/path/to/expression_matrix.csv", 
-#       covs_file="/path/to/covariate_matrix.csv", 
-#       plot_shapiro_dist=True
-#       )
+# Run from CLI with:
+# python3.8 apply_covariate_correction_to_gene_sample_matrix.py --mat_file="/path/to/mat_file.csv" --covs_file="/path/to/covs_file.csv" --plot_shapiro_dist="True"
 #
 ######################################################################################
 
-def regress_covs_from_gene(y):
+# import libs
+import pandas as pd
+import numpy as np
+from sklearn.linear_model import LinearRegression
+from scipy.stats import shapiro
+import sys
+import os
+import re
+import matplotlib
+import matplotlib.pyplot as plt
+import seaborn as sns
+import fire # allows fn to be run from the cmd line
 
-  """
-  Function to regress out covariates from each gene - applies over each column (gene), y.
-  Inserts residuals into predefined residual dataframe, residual_df, at residual_df[y], and 
-  inserts Shapiro P-values into shapiro_df.loc[y, 'shapiro_pval'].
-  """
-  gene_name = y.name
-  
-  print(gene_name)
-
-  # predictors
-  X = covs
-
-  # response var
-  y = np.array(y)
-
-  # get list of locations where gene has nan values
-  nan_locs = np.where(np.isnan(y))[0]
-
-  # masking NAs
-  finiteYmask = np.isfinite(y)
-  
-  # cleaning NAs from predictors and response vars
-  Yclean = y[finiteYmask]
-  Xclean = X[finiteYmask]
-  
-  # fit the model 
-  lm.fit(Xclean, Yclean)
-
-  # make predictions from covs - i.e. expected TPMs
-  predictions = lm.predict(Xclean)
-  
-  # reinsert removed nan values one-by-one to make y and predictions the same length
-  for i in range(0, len(nan_locs)):
-    predictions = np.insert(predictions, nan_locs[i], np.nan)
-
-  # residuals = observations - predictions, normalising so they're normally distributed
-  residuals = y - predictions
-
-  # adding residuals to residual df
-  residual_df[gene_name] = residuals
-  
-  # cleaning residuals of NaNs for shapiro fn. 
-  shapiro_resids = residuals[np.logical_not(np.isnan(residuals))]
-
-  # get shapiro pvals and add to shapiro_df
-  shapiro_pval = shapiro(shapiro_resids)[1]
-  shapiro_df.loc[gene_name, 'shapiro_pval'] = shapiro_pval
-  
+# define function to take in input data, wrangle, apply regress_covs_from_gene(y), and generate outputs
 def correct_gene_by_sample_matrix(mat_file="", covs_file="", plot_shapiro_dist=True):
 
   """
@@ -85,15 +46,6 @@ def correct_gene_by_sample_matrix(mat_file="", covs_file="", plot_shapiro_dist=T
   :return: residuals df
   
   """
-  
-  # import libs
-  import pandas as pd
-  import numpy as np
-  from sklearn.linear_model import LinearRegression
-  from scipy.stats import shapiro
-  import sys
-  import os
-  import re
   
   ##########################################################
   # Import data
@@ -181,6 +133,57 @@ def correct_gene_by_sample_matrix(mat_file="", covs_file="", plot_shapiro_dist=T
   # initiating the lm
   print("5. Initialising the linear regression model")
   lm = LinearRegression()
+  
+  # define function to perform lm across genes
+  # define gene regression function 
+  def regress_covs_from_gene(y):
+    """
+    Function to regress out covariates from each gene - applies over each column (gene), y.
+    Inserts residuals into predefined residual dataframe, residual_df, at residual_df[y], and 
+    inserts Shapiro P-values into shapiro_df.loc[y, 'shapiro_pval'].
+    """
+    gene_name = y.name
+  
+    print(gene_name)
+
+    # predictors
+    X = covs
+  
+    # response var
+    y = np.array(y)
+  
+    # get list of locations where gene has nan values
+    nan_locs = np.where(np.isnan(y))[0]
+  
+    # masking NAs
+    finiteYmask = np.isfinite(y)
+    
+    # cleaning NAs from predictors and response vars
+    Yclean = y[finiteYmask]
+    Xclean = X[finiteYmask]
+    
+    # fit the model 
+    lm.fit(Xclean, Yclean)
+  
+    # make predictions from covs - i.e. expected TPMs
+    predictions = lm.predict(Xclean)
+    
+    # reinsert removed nan values one-by-one to make y and predictions the same length
+    for i in range(0, len(nan_locs)):
+      predictions = np.insert(predictions, nan_locs[i], np.nan)
+  
+    # residuals = observations - predictions, normalising so they're normally distributed
+    residuals = y - predictions
+  
+    # adding residuals to residual df
+    residual_df[gene_name] = residuals
+    
+    # cleaning residuals of NaNs for shapiro fn. 
+    shapiro_resids = residuals[np.logical_not(np.isnan(residuals))]
+  
+    # get shapiro pvals and add to shapiro_df
+    shapiro_pval = shapiro(shapiro_resids)[1]
+    shapiro_df.loc[gene_name, 'shapiro_pval'] = shapiro_pval
 
   # applying regress_covs_from_gene fn. across genes
   # for 160 samples (rows) and 15K genes (cols), this step takes 41 seconds
@@ -215,11 +218,7 @@ def correct_gene_by_sample_matrix(mat_file="", covs_file="", plot_shapiro_dist=T
     
     print("8. Generating and writing out a plot to show the distribution of shapiro p-values. The vertical red line indicates P=0.05.")
     
-    import matplotlib
     matplotlib.use('Agg')
-    
-    import matplotlib.pyplot as plt
-    import seaborn as sns
     
     # get plot outfile name
     plot_out_file = mat_file.replace(".csv", "_shapiro_pvals.png")
@@ -232,7 +231,9 @@ def correct_gene_by_sample_matrix(mat_file="", covs_file="", plot_shapiro_dist=T
     plt.show()
     plt.savefig(plot_out_file)
 
-
+# allows fn to be run from the cmd line
+if __name__ == '__main__':
+  fire.Fire(correct_gene_by_sample_matrix)
 
 
 
