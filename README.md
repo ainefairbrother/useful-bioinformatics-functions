@@ -1,4 +1,4 @@
-# useful-bioinformatics-functions  
+# Useful bioinformatics functions
 
 This repo contains useful functions for doing typical bioinformatics tasks that I have developed during my PhD, and generalised here to make them useful to others.  
 

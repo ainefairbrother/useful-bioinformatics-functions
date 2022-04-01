@@ -81,12 +81,18 @@ def correct_gene_by_sample_matrix(mat_file="", covs_file="", plot_shapiro_dist=T
   # run input test on covs - check for lengths of rows and cols
   if len(covs.index.to_list()) > len(covs.columns.to_list()):
     print("INPUT FORMAT WARNING: you have more rows than columns. Is your input covs_file in the form rows=genes, cols=samples?")
-
-  print("3. Filtering mat and covs for column names in common.")
+    
+  # check that the index of both tables have row names (labels) and are not numeric (i.e. the first col of numbers has been used)
+  if mat.index.is_numeric() == True:
+    print("WARNING: expression matrix index (rownames) is numeric. This indicates that the first column of data has been used as rownames. Check that you have rownames in your input file.")
+  if covs.index.is_numeric() == True: 
+    print("WARNING: covariate matrix index (rownames) is numeric. This indicates that the first column of data has been used as rownames. Check that you have rownames in your input file.")
   
   ##########################################################
   # Wrangle data
   ##########################################################
+  
+  print("3. Filtering mat and covs for column names in common.")
 
   # getting columns (sample IDs) in common between covs and mat
   intersection_cols = covs.columns & mat.columns
@@ -101,7 +107,7 @@ def correct_gene_by_sample_matrix(mat_file="", covs_file="", plot_shapiro_dist=T
   # fill encoded covs with mean - fills with most common value for the variable in question
   # allows the mlr fn. to run, and should make very little difference to the correction 
   covs = covs.T
-  covs = covs.fillna(covs.mean())
+  covs.fillna(covs.mean(), inplace=True)
 
   # make samples = rows, genes = cols
   mat = mat.T
